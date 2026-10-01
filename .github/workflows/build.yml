@@ -8,25 +8,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      - name: Install Buildozer
+          python-version: '3.11'
+      - name: Install Buildozer & Dependencies
         run: |
-          pip install --upgrade pip
+          pip install --upgrade pip setuptools wheel
           pip install buildozer cython==0.29.33
-      - name: Install System Dependencies
-        run: |
           sudo apt update
           sudo apt install -y git zip unzip openjdk-17-jdk autoconf automake libtool ccache
-      - name: Force Install Android Build Tools (Fix Aidl Error)
+      - name: Accept Android Licenses Automatically
         run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
-          wget https://google.com -O tools.zip
-          unzip -q tools.zip -d ~/.buildozer/android/platform/android-sdk/cmdline-tools
-          mv ~/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
-          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-          ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.0" "platforms;android-33" "platform-tools"
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          buildozer android licenses || true
       - name: Build with Buildozer
-        run: buildozer android debug
+        run: |
+          export P4A_FORCE_BUILD_ALL=1
+          buildozer android debug
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
