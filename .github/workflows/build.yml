@@ -1,0 +1,24 @@
+name: Build APK
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Buildozer
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.33
+      - name: Install System Dependencies
+        run: sudo apt update && sudo apt install -y git zip unzip openjdk-17-jdk autoconf automake libtool
+      - name: Build with Buildozer
+        run: buildozer android debug
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Phoneremote-APK
+          path: bin/*.apk
